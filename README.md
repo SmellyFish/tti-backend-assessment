@@ -33,18 +33,18 @@ Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
 
 3. Open the app at [http://localhost:8000](http://localhost:8000). Laravel’s health check responds at `GET /up` (HTTP 200 when the application is booting correctly).
 
-**API scaffolding (JSON)** — routes live in [`routes/api.php`](routes/api.php) under the `/api` prefix:
+**REST API (JSON)** — routes live in [`routes/api.php`](routes/api.php) under the `/api` prefix. Controllers use Form Requests and API Resources (`app/Http/Requests`, `app/Http/Resources`).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/welcome` | Returns `{"message":"..."}` (copy from [`lang/en/api.php`](lang/en/api.php) via `__('api.welcome_message')`) |
-| `GET` | `/api/error_test` | Always returns **422** with the agreed validation error shape (sample field errors) |
+| `POST` | `/api/patients` | Create a patient (`name`, `date_of_birth` `Y-m-d`, `mrn`) — **201** |
+| `POST` | `/api/instruments` | Create an instrument with `title`, optional `description`, and `questions[]` (`prompt`, `response_type`, `sort_order`) — **201** |
 
-Unknown `api/*` paths return **404** JSON with `message` from translations. Validation failures on `api/*` use `message` + `errors` per Laravel, with `message` from [`lang/en/api.php`](lang/en/api.php).
+Unknown `api/*` paths return **404** JSON with `message` from [`lang/en/api.php`](lang/en/api.php). Validation failures on `api/*` return **422** with `message` + `errors` (same keys as Laravel validation).
 
 ### Localization
 
-User-facing API strings (welcome message, validation/not-found messages, error-test copy) live under **`lang/{locale}/`** and are resolved with Laravel’s `__()` helper—for example `__('api.welcome_message')` reads [`lang/en/api.php`](lang/en/api.php). Default locale is **`en`**; override with **`APP_LOCALE`** and **`APP_FALLBACK_LOCALE`** in `.env` (see [`config/app.php`](config/app.php)).
+User-facing API strings such as `validation_failed` and `not_found` live under **`lang/{locale}/`** (see [`lang/en/api.php`](lang/en/api.php)) and are resolved with Laravel’s `__()` helper in [`bootstrap/app.php`](bootstrap/app.php). Default locale is **`en`**; override with **`APP_LOCALE`** and **`APP_FALLBACK_LOCALE`** in `.env` (see [`config/app.php`](config/app.php)).
 
 To add another language later, add a parallel file such as `lang/es/api.php` with the **same keys** and Spanish values, then set the application locale per request (for example middleware that reads `Accept-Language`) using `App::setLocale('es')`.
 
