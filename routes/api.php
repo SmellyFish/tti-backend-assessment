@@ -5,12 +5,12 @@ use Illuminate\Validation\ValidationException;
 
 Route::get('/welcome', function () {
     return response()->json([
-        'message' => 'Hello, world',
+        'message' => __('api.welcome_message'),
     ]);
 });
 
 Route::get('/error_test', function () {
     throw ValidationException::withMessages([
-        'example_field' => ['Sample validation error for API error format testing.'],
+        'example_field' => [__('api.error_test_example_field')],
     ]);
 });

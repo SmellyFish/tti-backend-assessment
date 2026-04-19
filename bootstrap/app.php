@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Validation failed',
+                    'message' => __('api.validation_failed'),
                     'errors' => $e->errors(),
                 ], 422);
             }
@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Not found',
+                    'message' => __('api.not_found'),
                 ], 404);
             }
         });

@@ -37,10 +37,18 @@ Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/welcome` | Returns `{"message":"Hello, world"}` |
+| `GET` | `/api/welcome` | Returns `{"message":"..."}` (copy from [`lang/en/api.php`](lang/en/api.php) via `__('api.welcome_message')`) |
 | `GET` | `/api/error_test` | Always returns **422** with the agreed validation error shape (sample field errors) |
 
-Unknown `api/*` paths return **404** JSON `{"message":"Not found"}`. Validation failures on `api/*` use `{"message":"Validation failed","errors":{...}}`.
+Unknown `api/*` paths return **404** JSON with `message` from translations. Validation failures on `api/*` use `message` + `errors` per Laravel, with `message` from [`lang/en/api.php`](lang/en/api.php).
+
+### Localization
+
+User-facing API strings (welcome message, validation/not-found messages, error-test copy) live under **`lang/{locale}/`** and are resolved with Laravel’s `__()` helper—for example `__('api.welcome_message')` reads [`lang/en/api.php`](lang/en/api.php). Default locale is **`en`**; override with **`APP_LOCALE`** and **`APP_FALLBACK_LOCALE`** in `.env` (see [`config/app.php`](config/app.php)).
+
+To add another language later, add a parallel file such as `lang/es/api.php` with the **same keys** and Spanish values, then set the application locale per request (for example middleware that reads `Accept-Language`) using `App::setLocale('es')`.
+
+Published language stubs for validation and auth messages (optional) live under `lang/` after running `php artisan lang:publish`—see [Laravel localization](https://laravel.com/docs/localization).
 
 Services:
 
