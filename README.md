@@ -31,16 +31,15 @@ Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
 
    Use the copied `.env` as-is for Docker so `DB_HOST=db` points at the MySQL service. If you already have a `.env` from a non-Docker setup (for example SQLite), replace the `DB_*` block with the values from `.env.example` before running migrations.
 
-3. Open the app at [http://localhost:8000](http://localhost:8000). Laravel’s health check responds at `GET /up` (HTTP 200 when the application is booting correctly).
+3. Open the app at [http://localhost:8000](http://localhost:8000). The browser shows the same content as [`resources/docs/api-schema.md`](resources/docs/api-schema.md) (see **API documentation** below). Laravel’s health check responds at `GET /up` (HTTP 200 when the application is booting correctly).
 
-**REST API (JSON)** — routes live in [`routes/api.php`](routes/api.php) under the `/api` prefix. Controllers use Form Requests and API Resources (`app/Http/Requests`, `app/Http/Resources`).
+### API documentation (canonical)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/patients` | Create a patient (`name`, `date_of_birth` `Y-m-d`, `mrn`) — **201** |
-| `POST` | `/api/instruments` | Create an instrument with `title`, optional `description`, and `questions[]` (`prompt`, `response_type`, `sort_order`) — **201** |
+**Single source of truth** for the PRO API: data model, full route table (implemented and planned), request/response JSON examples, curl samples, and validation error shape:
 
-Unknown `api/*` paths return **404** JSON with `message` from [`lang/en/api.php`](lang/en/api.php). Validation failures on `api/*` return **422** with `message` + `errors` (same keys as Laravel validation).
+- **[`resources/docs/api-schema.md`](resources/docs/api-schema.md)**
+
+Code lives under [`routes/api.php`](routes/api.php) (`/api` prefix), with Form Requests and API Resources in `app/Http/Requests` and `app/Http/Resources`. Keep the markdown file updated when the API changes; the README only summarizes where to look.
 
 ### Localization
 
