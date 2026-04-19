@@ -33,6 +33,15 @@ Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
 
 3. Open the app at [http://localhost:8000](http://localhost:8000). Laravel’s health check responds at `GET /up` (HTTP 200 when the application is booting correctly).
 
+**API scaffolding (JSON)** — routes live in [`routes/api.php`](routes/api.php) under the `/api` prefix:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/welcome` | Returns `{"message":"Hello, world"}` |
+| `GET` | `/api/error_test` | Always returns **422** with the agreed validation error shape (sample field errors) |
+
+Unknown `api/*` paths return **404** JSON `{"message":"Not found"}`. Validation failures on `api/*` use `{"message":"Validation failed","errors":{...}}`.
+
 Services:
 
 | Service | Role |
