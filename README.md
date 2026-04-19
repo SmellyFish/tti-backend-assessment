@@ -10,6 +10,39 @@ Build a RESTful API that allows patients to submit and retrieve Patient Reported
 
 **Stack:** PHP 8.4+, Laravel 11+, MySQL 8+
 
+### Local development (Docker)
+
+Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
+
+1. Start containers (PHP-FPM app, Nginx, MySQL 8 with a persistent volume):
+
+   ```bash
+   docker compose up -d
+   ```
+
+2. Install PHP dependencies and configure the app:
+
+   ```bash
+   docker compose exec app composer install
+   cp .env.example .env
+   docker compose exec app php artisan key:generate
+   docker compose exec app php artisan migrate --seed
+   ```
+
+   Use the copied `.env` as-is for Docker so `DB_HOST=db` points at the MySQL service. If you already have a `.env` from a non-Docker setup (for example SQLite), replace the `DB_*` block with the values from `.env.example` before running migrations.
+
+3. Open the app at [http://localhost:8000](http://localhost:8000). Laravel’s health check responds at `GET /up` (HTTP 200 when the application is booting correctly).
+
+Services:
+
+| Service | Role |
+|--------|------|
+| `app` | PHP 8.4-FPM, Composer, extensions: `pdo_mysql`, `mbstring`, `bcmath`, `zip` |
+| `web` | Nginx → forwards PHP to `app:9000`, document root `public/` |
+| `db` | MySQL 8.4, database `laravel`, user `laravel` / password `secret` (see `.env.example`) |
+
+Default database settings in `.env.example` use `DB_HOST=db` (the Compose service name). MySQL data is stored in the `mysql_data` Docker volume.
+
 ### Background
 
 Wave Health helps patients with chronic conditions track their treatment experiences. Patients periodically complete questionnaires (called "instruments") that capture symptoms, side effects, and quality of life. Clinicians use this data to monitor patients remotely.
@@ -74,7 +107,6 @@ Returns an aggregated view of a patient's responses to a specific instrument ove
 
 - Automated tests (Feature or Unit) for key endpoints
 - API documentation (e.g., OpenAPI/Swagger or a simple markdown doc)
-- Docker Compose setup for local development
 - Rate limiting or authentication scaffolding
 - Any performance considerations (query optimization, eager loading, caching)
 
