@@ -29,7 +29,7 @@ All routes are under the `/api` prefix. Request and response bodies are JSON unl
 | `instrument_id` | integer | FK → instruments |
 | `prompt` | string | |
 | `response_type` | enum | One of: `scale_1_5`, `yes_no`, `free_text` |
-| `order` | integer | Display order within the instrument |
+| `order` | integer | Display order within the instrument (persisted as `sort_order` in the database) |
 
 ### Submission
 

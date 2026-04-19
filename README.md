@@ -43,6 +43,78 @@ Services:
 
 Default database settings in `.env.example` use `DB_HOST=db` (the Compose service name). MySQL data is stored in the `mysql_data` Docker volume.
 
+### Database (PRO domain)
+
+Migrations define **patients**, **instruments**, **questions**, **submissions**, and **answers**, with foreign keys and indexes on `patients.mrn` (unique), `submissions.patient_id`, and `submissions.instrument_id`. Question **response types** are stored as strings and mapped in PHP to `App\Enums\ResponseType` (`scale_1_5`, `yes_no`, `free_text`). Answer **values** are stored as JSON so each row can hold a number, boolean, or string as required by the question type.
+
+The questions table uses a **`sort_order`** column (integer) for ordering within an instrument—this avoids the SQL reserved word `order` and will be exposed as `order` in API payloads in a later phase.
+
+Eloquent relationships: `Patient` → submissions; `Instrument` → questions / submissions; `Submission` → answers; `Answer` → submission / question (see `app/Models`).
+
+### Seeding sample data
+
+The default seeder loads **PRO** demo data only (two patients, one instrument with three questions, and three submissions with answers). It does not create Laravel `users`.
+
+From a configured environment:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+With Docker:
+
+```bash
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+Re-run seeding without wiping migrations:
+
+```bash
+php artisan db:seed
+# or
+php artisan db:seed --class=Database\\Seeders\\ProSampleDataSeeder
+```
+
+### Automated tests
+
+PHPUnit is configured in [`phpunit.xml`](phpunit.xml). Tests use an **in-memory SQLite** database (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`) so the suite does not require MySQL. Feature tests that hit the database should use `RefreshDatabase`.
+
+Run all tests:
+
+```bash
+php artisan test
+```
+
+Or:
+
+```bash
+./vendor/bin/phpunit
+```
+
+With Docker:
+
+```bash
+docker compose exec app php artisan test
+```
+
+Filter by suite or file, for example:
+
+```bash
+php artisan test --testsuite=Feature
+docker compose exec app php artisan test tests/Feature/ExampleTest.php
+```
+
+### Exploring models (optional)
+
+To sanity-check relations in a REPL:
+
+```bash
+php artisan tinker
+# or: docker compose exec app php artisan tinker
+```
+
+Example: `App\Models\Patient::with('submissions.answers')->first()`.
+
 ### Background
 
 Wave Health helps patients with chronic conditions track their treatment experiences. Patients periodically complete questionnaires (called "instruments") that capture symptoms, side effects, and quality of life. Clinicians use this data to monitor patients remotely.
