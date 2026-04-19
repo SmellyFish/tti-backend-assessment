@@ -176,6 +176,64 @@ The following match the current Laravel implementation (status codes and JSON sh
 }
 ```
 
+## Sample curl commands
+
+Base URL (local Docker setup): `http://localhost:8000`. Run these in your normal terminal, **not** inside `php artisan tinker`.
+
+### Create patients
+
+```bash
+curl -sS -X POST http://localhost:8000/api/patients \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alex Chen",
+    "date_of_birth": "1990-05-20",
+    "mrn": "MRN-DEMO-001"
+  }'
+```
+
+Use a **different** `mrn` for each patient:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/patients \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Sam Okonkwo",
+    "date_of_birth": "1975-11-02",
+    "mrn": "MRN-DEMO-002"
+  }'
+```
+
+### Create an instrument (with questions)
+
+```bash
+curl -sS -X POST http://localhost:8000/api/instruments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Weekly symptom check-in",
+    "description": "Short PRO questionnaire",
+    "questions": [
+      {
+        "prompt": "Overall, how would you rate your pain this week?",
+        "response_type": "scale_1_5",
+        "sort_order": 1
+      },
+      {
+        "prompt": "Did you take your medications as directed?",
+        "response_type": "yes_no",
+        "sort_order": 2
+      },
+      {
+        "prompt": "Anything else for your care team?",
+        "response_type": "free_text",
+        "sort_order": 3
+      }
+    ]
+  }'
+```
+
+`description` is optional (omit it or set to `null`). Successful responses are **201** with JSON; validation errors are **422** with `message` and `errors`.
+
 ## Summary endpoint (`GET .../summary`)
 
 Query parameter: `instrument_id` (required).
