@@ -1,9 +1,33 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "nikita-makeyev/pro-api",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Patient Reported Outcomes (PRO) API built with Laravel, MySQL, and Docker.",
+    "keywords": [
+        "laravel",
+        "pro",
+        "patient-reported-outcomes",
+        "healthcare",
+        "api",
+        "mysql",
+        "docker"
+    ],
+    "homepage": "https://github.com/SmellyFish/tti-backend-assessment",
+    "support": {
+        "issues": "https://github.com/SmellyFish/tti-backend-assessment/issues",
+        "source": "https://github.com/SmellyFish/tti-backend-assessment"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/SmellyFish/tti-backend-assessment.git"
+        }
+    ],
+    "authors": [
+        {
+            "name": "Nikita Makeyev"
+        }
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.4",
