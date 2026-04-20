@@ -41,6 +41,30 @@ Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
 
 Code lives under [`routes/api.php`](routes/api.php) (`/api` prefix), with Form Requests and API Resources in `app/Http/Requests` and `app/Http/Resources`. Keep the markdown file updated when the API changes; the README only summarizes where to look.
 
+### Design decisions
+
+- **Typed answer storage via JSON**: Answer values are stored in a single JSON column so one schema supports `scale_1_5` (number), `yes_no` (boolean), and `free_text` (string) without polymorphic tables.
+- **Strict write contracts with Form Requests**: Input validation is centralized in `StorePatientRequest`, `StoreInstrumentRequest`, `StoreSubmissionRequest`, and `SummaryRequest`, keeping controllers focused on orchestration.
+- **Stable API responses with Resources**: API Resources are used for all implemented endpoints to avoid leaking raw model internals and to keep response shapes predictable.
+- **Summary aggregation shape**: `GET /api/patients/{id}/summary` returns top-level metadata (`total_submissions`, earliest/latest dates) plus per-question metrics keyed by response type (`average_score`, `yes_percentage`, `non_empty_count`).
+- **Localized API strings**: User-facing API messages are resolved through `lang/{locale}/api.php` so additional locales can be added without source-code string rewrites.
+
+### Trade-offs
+
+- **Time-boxed implementation**: The assessment was implemented in phases; core correctness, validation, and test coverage were prioritized over broader platform concerns.
+- **In-memory aggregation for summary**: The summary endpoint currently loads relevant submissions and answers then computes aggregates in PHP for clarity and maintainability; SQL-side aggregation or caching can be added later if data volume grows.
+- **Single canonical docs file**: Endpoint payload details live in `resources/docs/api-schema.md` and are rendered at `/`; this README intentionally links to that source instead of duplicating examples.
+- **No authentication layer in scope**: Auth/rate limiting were left out of the core implementation to match the exercise scope and keep focus on domain behavior.
+
+### Future improvements
+
+- Add summary caching/invalidation strategy for high-frequency dashboard reads.
+- Add API auth (for example Sanctum) and route-level rate limiting.
+- Add query/performance instrumentation (including automated N+1 guards in tests).
+- Expand localization with additional language files and request-driven locale negotiation.
+- Add OpenAPI spec generation and contract-level schema validation in CI.
+- Add CI pipeline with automated test/lint checks and container build verification.
+
 ### Localization
 
 User-facing API strings such as `validation_failed` and `not_found` live under **`lang/{locale}/`** (see [`lang/en/api.php`](lang/en/api.php)) and are resolved with Laravel’s `__()` helper in [`bootstrap/app.php`](bootstrap/app.php). Default locale is **`en`**; override with **`APP_LOCALE`** and **`APP_FALLBACK_LOCALE`** in `.env` (see [`config/app.php`](config/app.php)).
