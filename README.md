@@ -120,6 +120,21 @@ php artisan test tests/Feature/Api
 php artisan test
 ```
 
+### PRD mapping (quick reviewer guide)
+
+This section maps key PRD requirements in [`plan.md`](plan.md) to concrete implementation artifacts.
+
+| PRD area | Where it is implemented |
+|--------|------|
+| Core REST endpoints | `routes/api.php`, `app/Http/Controllers/Api/*`, `tests/Feature/Api/*` |
+| Request validation + error envelope | `app/Http/Requests/*`, `bootstrap/app.php`, `lang/en/api.php` |
+| Summary aggregation logic | `app/Services/PatientInstrumentSummaryBuilder.php`, `app/Http/Controllers/Api/SubmissionController.php`, `tests/Feature/Api/SummaryApiTest.php` |
+| Data model, relationships, indexes | `database/migrations/*`, `app/Models/*`, `app/Enums/ResponseType.php` |
+| API response shaping | `app/Http/Resources/*`, `app/Providers/AppServiceProvider.php` (`JsonResource::withoutWrapping()`) |
+| Dockerized local setup | `docker-compose.yml`, `Dockerfile`, `.env.example`, setup steps in this README |
+| API docs (human + machine readable) | `resources/docs/api-schema.md`, `resources/docs/openapi.yaml` |
+| Bonus scaffolding (rate limiting + Sanctum) | `app/Providers/AppServiceProvider.php`, `app/Http/Controllers/Api/AuthTokenController.php`, `app/Http/Requests/IssueTokenRequest.php`, `tests/Feature/Api/RateLimitApiTest.php`, `tests/Feature/Api/AuthTokenTest.php` |
+
 ### Localization
 
 User-facing API strings such as `validation_failed` and `not_found` live under **`lang/{locale}/`** (see [`lang/en/api.php`](lang/en/api.php)) and are resolved with Laravel’s `__()` helper in [`bootstrap/app.php`](bootstrap/app.php). Default locale is **`en`**; override with **`APP_LOCALE`** and **`APP_FALLBACK_LOCALE`** in `.env` (see [`config/app.php`](config/app.php)).
