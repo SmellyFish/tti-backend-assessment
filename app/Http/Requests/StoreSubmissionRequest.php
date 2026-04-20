@@ -55,6 +55,7 @@ class StoreSubmissionRequest extends FormRequest
 
             if ($providedQuestionIds->count() !== $expectedQuestions->count()) {
                 $validator->errors()->add('answers', __('api.answers_all_questions_required'));
+
                 return;
             }
 
@@ -74,6 +75,7 @@ class StoreSubmissionRequest extends FormRequest
                 $question = $expectedQuestions->get($questionId);
                 if (! $question) {
                     $validator->errors()->add("answers.$index.question_id", __('api.answer_question_invalid_for_instrument'));
+
                     continue;
                 }
 

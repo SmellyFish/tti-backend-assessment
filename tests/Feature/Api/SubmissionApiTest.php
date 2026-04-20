@@ -11,8 +11,8 @@ use Tests\TestCase;
 
 class SubmissionApiTest extends TestCase
 {
-    use RefreshDatabase;
     use ProApiFixtures;
+    use RefreshDatabase;
 
     public function test_store_submission_creates_submission_and_answers(): void
     {

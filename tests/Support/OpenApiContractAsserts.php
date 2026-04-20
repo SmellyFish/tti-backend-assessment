@@ -2,6 +2,7 @@
 
 namespace Tests\Support;
 
+use Illuminate\Testing\TestResponse;
 use League\OpenAPIValidation\PSR7\OperationAddress;
 use League\OpenAPIValidation\PSR7\ResponseValidator;
 use League\OpenAPIValidation\PSR7\ValidatorBuilder;
@@ -14,7 +15,7 @@ trait OpenApiContractAsserts
     private static ?ResponseValidator $openApiResponseValidator = null;
 
     protected function assertMatchesOpenApiContract(
-        \Illuminate\Testing\TestResponse $response,
+        TestResponse $response,
         string $method,
         string $pathTemplate
     ): void {

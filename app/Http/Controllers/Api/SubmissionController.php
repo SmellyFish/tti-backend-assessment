@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SummaryRequest;
 use App\Http\Requests\StoreSubmissionRequest;
+use App\Http\Requests\SummaryRequest;
 use App\Http\Resources\PatientSummaryResource;
 use App\Http\Resources\SubmissionResource;
 use App\Models\Patient;

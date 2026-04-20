@@ -10,8 +10,8 @@ use Tests\TestCase;
 
 class SummaryApiTest extends TestCase
 {
-    use RefreshDatabase;
     use ProApiFixtures;
+    use RefreshDatabase;
 
     public function test_summary_returns_aggregates_for_mixed_question_types(): void
     {
@@ -180,5 +180,4 @@ class SummaryApiTest extends TestCase
         $response->assertNotFound()
             ->assertJsonPath('message', __('api.not_found'));
     }
-
 }
