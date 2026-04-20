@@ -322,6 +322,54 @@ Returns one submission. If the `submission_id` exists but belongs to a different
 
 Base URL (local Docker setup): `http://localhost:8000`. Run these in your normal terminal, **not** inside `php artisan tinker`.
 
+### Get a bearer token (Sanctum)
+
+If you do not already have a user, create one in tinker first:
+
+```bash
+docker compose exec app php artisan tinker
+```
+
+```php
+App\Models\User::create([
+  'name' => 'Test User',
+  'email' => 'auth@example.com',
+  'password' => 'password',
+]);
+```
+
+Request a token:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "auth@example.com",
+    "password": "password",
+    "device_name": "postman"
+  }'
+```
+
+Use the returned token in authenticated requests:
+
+```bash
+curl -sS \
+  -H "Authorization: Bearer <your_token_here>" \
+  "http://localhost:8000/api/patients/1/summary?instrument_id=1"
+```
+
+Test the protected auth route:
+
+```bash
+# Without token (expects 401)
+curl -i http://localhost:8000/api/auth-test
+
+# With token (expects 200)
+curl -sS \
+  -H "Authorization: Bearer <your_token_here>" \
+  http://localhost:8000/api/auth-test
+```
+
 ### Create patients
 
 ```bash

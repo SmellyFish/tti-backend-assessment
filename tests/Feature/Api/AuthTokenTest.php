@@ -163,6 +163,25 @@ class AuthTokenTest extends TestCase
             ->assertJsonValidationErrors(['device_name']);
     }
 
+    public function test_auth_test_endpoint_requires_sanctum_token(): void
+    {
+        $response = $this->getJson('/api/auth-test');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_auth_test_endpoint_returns_success_for_authenticated_user(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test-device')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/auth-test');
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Authenticated');
+    }
+
     /**
      * @return array<string, mixed>
      */
