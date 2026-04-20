@@ -182,6 +182,18 @@ class AuthTokenTest extends TestCase
             ->assertJsonPath('message', 'Authenticated');
     }
 
+    public function test_core_pro_route_remains_public_without_sanctum_token(): void
+    {
+        $response = $this->postJson('/api/patients', [
+            'name' => 'Public Route Patient',
+            'date_of_birth' => '1991-04-20',
+            'mrn' => 'MRN-PUBLIC-'.uniqid(),
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('name', 'Public Route Patient');
+    }
+
     /**
      * @return array<string, mixed>
      */

@@ -88,6 +88,66 @@ class SummaryApiTest extends TestCase
             ->assertJsonPath('questions.2.non_empty_count', 0);
     }
 
+    public function test_summary_returns_non_integer_average_with_stable_rounding(): void
+    {
+        [$patient, $instrument, $questions] = $this->seedPatientAndInstrument();
+
+        $this->createSubmission($patient, $instrument, $questions, now()->subHour(), 2, true, 'Low day');
+        $this->createSubmission($patient, $instrument, $questions, now(), 3, false, 'Better day');
+
+        $response = $this->getJson("/api/patients/{$patient->id}/summary?instrument_id={$instrument->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('questions.0.average_score', 2.5);
+    }
+
+    public function test_summary_ignores_non_boolean_yes_no_values_in_denominator(): void
+    {
+        [$patient, $instrument, $questions] = $this->seedPatientAndInstrument();
+
+        $validSubmission = Submission::query()->create([
+            'patient_id' => $patient->id,
+            'instrument_id' => $instrument->id,
+            'submitted_at' => now()->subMinute(),
+        ]);
+        $validSubmission->answers()->createMany([
+            ['question_id' => $questions[0]->id, 'value' => 4],
+            ['question_id' => $questions[1]->id, 'value' => true],
+            ['question_id' => $questions[2]->id, 'value' => 'valid boolean'],
+        ]);
+
+        $invalidYesNoSubmission = Submission::query()->create([
+            'patient_id' => $patient->id,
+            'instrument_id' => $instrument->id,
+            'submitted_at' => now(),
+        ]);
+        $invalidYesNoSubmission->answers()->createMany([
+            ['question_id' => $questions[0]->id, 'value' => 5],
+            ['question_id' => $questions[1]->id, 'value' => 'yes'],
+            ['question_id' => $questions[2]->id, 'value' => 'non-boolean yes/no'],
+        ]);
+
+        $response = $this->getJson("/api/patients/{$patient->id}/summary?instrument_id={$instrument->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('questions.1.yes_percentage', 100);
+    }
+
+    public function test_summary_free_text_count_locks_unicode_whitespace_behavior(): void
+    {
+        [$patient, $instrument, $questions] = $this->seedPatientAndInstrument();
+
+        $this->createSubmission($patient, $instrument, $questions, now()->subMinutes(3), 2, true, '');
+        $this->createSubmission($patient, $instrument, $questions, now()->subMinutes(2), 3, true, '   ');
+        $this->createSubmission($patient, $instrument, $questions, now()->subMinute(), 4, true, "\u{00A0}");
+        $this->createSubmission($patient, $instrument, $questions, now(), 5, true, "\u{3000}");
+
+        $response = $this->getJson("/api/patients/{$patient->id}/summary?instrument_id={$instrument->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('questions.2.non_empty_count', 2);
+    }
+
     public function test_summary_requires_instrument_id_query_parameter(): void
     {
         [$patient] = $this->seedPatientAndInstrument();

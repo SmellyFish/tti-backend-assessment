@@ -302,6 +302,31 @@ class SubmissionApiTest extends TestCase
             ->assertJsonPath('message', __('api.not_found'));
     }
 
+    public function test_store_submission_round_trips_utf8_free_text_in_response_and_database(): void
+    {
+        [$patient, $instrument, $questions] = $this->seedPatientWithInstrument();
+        $unicodeText = '体調は良いです 👍🏽 Прогресс ممتاز';
+
+        $response = $this->postJson("/api/patients/{$patient->id}/submissions", [
+            'instrument_id' => $instrument->id,
+            'answers' => [
+                ['question_id' => $questions[0]->id, 'value' => 5],
+                ['question_id' => $questions[1]->id, 'value' => true],
+                ['question_id' => $questions[2]->id, 'value' => $unicodeText],
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('answers.2.value', $unicodeText);
+
+        $submissionId = $response->json('id');
+        $this->assertDatabaseHas('answers', [
+            'submission_id' => $submissionId,
+            'question_id' => $questions[2]->id,
+            'value' => json_encode($unicodeText),
+        ]);
+    }
+
     /**
      * @return array{Patient, Instrument, array<int, Question>}
      */

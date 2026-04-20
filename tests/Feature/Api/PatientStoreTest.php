@@ -166,6 +166,68 @@ class PatientStoreTest extends TestCase
             ->assertJsonValidationErrors(['mrn']);
     }
 
+    public function test_store_patient_round_trips_utf8_strings_in_response_and_database(): void
+    {
+        $payload = [
+            'name' => 'Мария 李 😊',
+            'date_of_birth' => '1992-11-03',
+            'mrn' => 'MRN-患者-🌍-001',
+        ];
+
+        $response = $this->postJson('/api/patients', $payload);
+
+        $response->assertCreated()
+            ->assertJsonPath('name', $payload['name'])
+            ->assertJsonPath('mrn', $payload['mrn']);
+
+        $this->assertDatabaseHas('patients', [
+            'name' => $payload['name'],
+            'mrn' => $payload['mrn'],
+        ]);
+    }
+
+    public function test_store_patient_accepts_255_multibyte_characters_for_name_and_mrn(): void
+    {
+        $payload = $this->minimalValidPayload();
+        $payload['name'] = str_repeat('界', 255);
+        $payload['mrn'] = str_repeat('測', 255);
+
+        $this->postJson('/api/patients', $payload)
+            ->assertCreated()
+            ->assertJsonPath('name', $payload['name'])
+            ->assertJsonPath('mrn', $payload['mrn']);
+    }
+
+    public function test_store_patient_rejects_256_multibyte_characters_for_name_and_mrn(): void
+    {
+        $payload = $this->minimalValidPayload();
+        $payload['name'] = str_repeat('界', 256);
+        $payload['mrn'] = str_repeat('測', 256);
+
+        $this->postJson('/api/patients', $payload)
+            ->assertStatus(422)
+            ->assertJsonPath('message', __('api.validation_failed'))
+            ->assertJsonValidationErrors(['name', 'mrn']);
+    }
+
+    public function test_store_patient_rejects_malformed_utf16_declared_json_payload(): void
+    {
+        $response = $this->call(
+            'POST',
+            '/api/patients',
+            [],
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json; charset=UTF-16',
+                'HTTP_ACCEPT' => 'application/json',
+            ],
+            "\xFF\xFE{\x00\"\x00n\x00a\x00m\x00e\x00\"\x00:\x00}",
+        );
+
+        $this->assertContains($response->getStatusCode(), [400, 422]);
+    }
+
     /**
      * @return array<string, mixed>
      */

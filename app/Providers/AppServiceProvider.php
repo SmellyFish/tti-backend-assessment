@@ -10,6 +10,8 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public const API_RATE_LIMIT_PER_MINUTE = 60;
+
     /**
      * Register any application services.
      */
@@ -33,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            return Limit::perMinute(60)->by($request->ip() ?? 'unknown-ip');
+            return Limit::perMinute(self::API_RATE_LIMIT_PER_MINUTE)->by($request->ip() ?? 'unknown-ip');
         });
 
         JsonResource::withoutWrapping();

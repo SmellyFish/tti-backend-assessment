@@ -200,6 +200,54 @@ class InstrumentStoreTest extends TestCase
             ->assertJsonPath('questions.0.sort_order', 0);
     }
 
+    public function test_store_instrument_round_trips_utf8_fields_in_response_and_database(): void
+    {
+        $payload = [
+            'title' => '日次チェック 🩺',
+            'description' => 'Обратная связь للمريض',
+            'questions' => [
+                [
+                    'prompt' => '最近の体調はどうですか؟ 😊',
+                    'response_type' => 'free_text',
+                    'sort_order' => 1,
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/api/instruments', $payload);
+
+        $response->assertCreated()
+            ->assertJsonPath('title', $payload['title'])
+            ->assertJsonPath('description', $payload['description'])
+            ->assertJsonPath('questions.0.prompt', $payload['questions'][0]['prompt']);
+
+        $this->assertDatabaseHas('instruments', [
+            'title' => $payload['title'],
+            'description' => $payload['description'],
+        ]);
+    }
+
+    public function test_title_accepts_255_multibyte_characters(): void
+    {
+        $payload = $this->minimalValidPayload();
+        $payload['title'] = str_repeat('界', 255);
+
+        $this->postJson('/api/instruments', $payload)
+            ->assertCreated()
+            ->assertJsonPath('title', $payload['title']);
+    }
+
+    public function test_title_rejects_256_multibyte_characters(): void
+    {
+        $payload = $this->minimalValidPayload();
+        $payload['title'] = str_repeat('界', 256);
+
+        $this->postJson('/api/instruments', $payload)
+            ->assertStatus(422)
+            ->assertJsonPath('message', __('api.validation_failed'))
+            ->assertJsonValidationErrors(['title']);
+    }
+
     /**
      * @return array<string, mixed>
      */
