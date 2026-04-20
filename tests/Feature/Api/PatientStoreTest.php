@@ -22,6 +22,7 @@ class PatientStoreTest extends TestCase
             ->assertJsonPath('name', 'Alex Chen')
             ->assertJsonPath('mrn', 'MRN-API-001')
             ->assertJsonPath('date_of_birth', '1990-05-20');
+        $this->assertMatchesOpenApiContract($response, 'POST', '/api/patients');
 
         $this->assertDatabaseHas('patients', ['mrn' => 'MRN-API-001']);
     }
@@ -37,6 +38,7 @@ class PatientStoreTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonPath('message', __('api.validation_failed'))
             ->assertJsonStructure(['errors']);
+        $this->assertMatchesOpenApiContract($response, 'POST', '/api/patients');
     }
 
     public function test_name_is_required(): void

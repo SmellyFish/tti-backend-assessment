@@ -30,6 +30,7 @@ class SubmissionApiTest extends TestCase
             ->assertJsonPath('patient_id', $patient->id)
             ->assertJsonPath('instrument_id', $instrument->id)
             ->assertJsonCount(3, 'answers');
+        $this->assertMatchesOpenApiContract($response, 'POST', '/api/patients/{patient}/submissions');
 
         $this->assertDatabaseCount('submissions', 1);
         $this->assertDatabaseCount('answers', 3);
@@ -50,6 +51,7 @@ class SubmissionApiTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonPath('message', __('api.validation_failed'))
             ->assertJsonValidationErrors(['answers']);
+        $this->assertMatchesOpenApiContract($response, 'POST', '/api/patients/{patient}/submissions');
     }
 
     public function test_store_submission_validates_answer_types(): void

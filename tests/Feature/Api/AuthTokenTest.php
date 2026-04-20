@@ -28,6 +28,7 @@ class AuthTokenTest extends TestCase
             ->assertJsonPath('user.id', $user->id)
             ->assertJsonPath('user.email', 'auth@example.com')
             ->assertJsonStructure(['token']);
+        $this->assertMatchesOpenApiContract($response, 'POST', '/api/auth/token');
     }
 
     public function test_issue_token_returns_401_for_invalid_credentials(): void
@@ -44,6 +45,7 @@ class AuthTokenTest extends TestCase
 
         $response->assertStatus(401)
             ->assertJsonPath('message', __('api.invalid_credentials'));
+        $this->assertMatchesOpenApiContract($response, 'POST', '/api/auth/token');
     }
 
     public function test_issue_token_returns_422_for_invalid_payload(): void

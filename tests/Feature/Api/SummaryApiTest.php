@@ -32,6 +32,7 @@ class SummaryApiTest extends TestCase
             ->assertJsonPath('questions.1.yes_percentage', 50)
             ->assertJsonPath('questions.2.response_type', 'free_text')
             ->assertJsonPath('questions.2.non_empty_count', 1);
+        $this->assertMatchesOpenApiContract($response, 'GET', '/api/patients/{patient}/summary');
 
         $this->assertNotNull($response->json('earliest_submission'));
         $this->assertNotNull($response->json('latest_submission'));
@@ -157,6 +158,7 @@ class SummaryApiTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonPath('message', __('api.validation_failed'))
             ->assertJsonValidationErrors(['instrument_id']);
+        $this->assertMatchesOpenApiContract($response, 'GET', '/api/patients/{patient}/summary');
     }
 
     public function test_summary_validates_instrument_id_exists(): void
