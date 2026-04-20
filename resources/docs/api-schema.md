@@ -409,17 +409,102 @@ curl -sS http://localhost:8000/api/patients/1/submissions
 curl -sS http://localhost:8000/api/patients/1/submissions/10
 ```
 
-## Summary endpoint (`GET .../summary`)
+## `GET /api/patients/{patient_id}/summary?instrument_id={id}`
 
-Query parameter: `instrument_id` (required).
+Returns an aggregated summary for one patient and one instrument.
 
-Per question type (across all submissions for that patient + instrument):
+**Query parameter**
 
-- **`scale_1_5`** — average score
-- **`yes_no`** — percentage of “yes” responses
-- **`free_text`** — count of non-empty responses
+- `instrument_id` (required, integer, must exist)
 
-Also includes: `total_submissions`, `earliest_submission`, `latest_submission`.
+**200 OK** — example with submissions:
+
+```json
+{
+  "patient_id": 1,
+  "instrument_id": 1,
+  "total_submissions": 2,
+  "earliest_submission": "2026-04-20T10:00:00+00:00",
+  "latest_submission": "2026-04-21T10:00:00+00:00",
+  "questions": [
+    {
+      "question_id": 1,
+      "prompt": "Overall, how would you rate your pain this week?",
+      "response_type": "scale_1_5",
+      "average_score": 3
+    },
+    {
+      "question_id": 2,
+      "prompt": "Did you take your medications as directed?",
+      "response_type": "yes_no",
+      "yes_percentage": 50
+    },
+    {
+      "question_id": 3,
+      "prompt": "Anything else for your care team?",
+      "response_type": "free_text",
+      "non_empty_count": 1
+    }
+  ]
+}
+```
+
+**200 OK** — example when no submissions exist for that patient + instrument:
+
+```json
+{
+  "patient_id": 1,
+  "instrument_id": 1,
+  "total_submissions": 0,
+  "earliest_submission": null,
+  "latest_submission": null,
+  "questions": [
+    {
+      "question_id": 1,
+      "prompt": "Overall, how would you rate your pain this week?",
+      "response_type": "scale_1_5",
+      "average_score": null
+    },
+    {
+      "question_id": 2,
+      "prompt": "Did you take your medications as directed?",
+      "response_type": "yes_no",
+      "yes_percentage": null
+    },
+    {
+      "question_id": 3,
+      "prompt": "Anything else for your care team?",
+      "response_type": "free_text",
+      "non_empty_count": 0
+    }
+  ]
+}
+```
+
+**422 Unprocessable Entity** — missing/invalid query parameter:
+
+```json
+{
+  "message": "Validation failed",
+  "errors": {
+    "instrument_id": ["The instrument id field is required."]
+  }
+}
+```
+
+**404 Not Found** — unknown patient:
+
+```json
+{
+  "message": "Not found"
+}
+```
+
+### Summary curl example
+
+```bash
+curl -sS "http://localhost:8000/api/patients/1/summary?instrument_id=1"
+```
 
 ## Validation (overview)
 

@@ -10,3 +10,4 @@ Route::post('/instruments', [InstrumentController::class, 'store']);
 Route::post('/patients/{patient}/submissions', [SubmissionController::class, 'store']);
 Route::get('/patients/{patient}/submissions', [SubmissionController::class, 'index']);
 Route::get('/patients/{patient}/submissions/{submission}', [SubmissionController::class, 'show']);
+Route::get('/patients/{patient}/summary', [SubmissionController::class, 'summary']);
