@@ -14,6 +14,8 @@ servers:
 tags:
   - name: auth
     description: Token issuance operations
+  - name: easter-egg
+    description: Optional playful endpoint
   - name: patients
     description: Patient creation operations
   - name: instruments
@@ -24,6 +26,24 @@ tags:
     description: Aggregated patient summary operations
 security: []
 paths:
+  /api/try-me:
+    get:
+      tags: [easter-egg]
+      summary: Only for the curious of mind
+      operationId: tryMe
+      responses:
+        '200':
+          description: Curiosity rewarded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TryMeResponse'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
   /api/auth/token:
     post:
       tags: [auth]
@@ -320,6 +340,16 @@ components:
       schema:
         type: integer
   schemas:
+    TryMeResponse:
+      type: object
+      required: [message, chorus]
+      properties:
+        message:
+          type: string
+        chorus:
+          type: array
+          items:
+            type: string
     StoreAuthTokenRequest:
       type: object
       required: [email, password]

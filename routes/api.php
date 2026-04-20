@@ -7,6 +7,12 @@ use App\Http\Controllers\Api\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/token', [AuthTokenController::class, 'store']);
+Route::get('/try-me', function () {
+    return response()->json([
+        'message' => __('api.try_me_teaser'),
+        'chorus' => __('api.try_me_chorus'),
+    ]);
+});
 if (app()->environment(['local', 'testing'])) {
     Route::middleware('auth:sanctum')->get('/auth-test', function () {
         return response()->json([

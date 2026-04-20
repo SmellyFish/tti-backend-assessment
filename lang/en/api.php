@@ -10,4 +10,13 @@ return [
     'answer_value_yes_no_invalid' => 'The value must be a boolean.',
     'answer_value_free_text_invalid' => 'The value must be a string.',
     'invalid_credentials' => 'Invalid credentials.',
+    'try_me_teaser' => 'Only for the curious of mind.',
+    'try_me_chorus' => [
+        'Never gonna give you up',
+        'Never gonna let you down',
+        'Never gonna run around and desert you',
+        'Never gonna make you cry',
+        'Never gonna say goodbye',
+        'Never gonna tell a lie and hurt you',
+    ],
 ];

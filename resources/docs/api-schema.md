@@ -64,6 +64,7 @@ All routes are under the `/api` prefix. Request and response bodies are JSON unl
 | `GET` | `/api/patients/{patient_id}/submissions` | List submissions (paginated, newest first) |
 | `GET` | `/api/patients/{patient_id}/submissions/{submission_id}` | Get one submission with answers |
 | `GET` | `/api/patients/{patient_id}/summary?instrument_id={id}` | Aggregated summary for that patient and instrument |
+| `GET` | `/api/try-me` | Only for the curious of mind |
 
 ## Implemented endpoints — request / response examples
 
@@ -557,6 +558,14 @@ Returns an aggregated summary for one patient and one instrument.
 
 ```bash
 curl -sS "http://localhost:8000/api/patients/1/summary?instrument_id=1"
+```
+
+### `GET /api/try-me`
+
+Only for the curious of mind.
+
+```bash
+curl -sS "http://localhost:8000/api/try-me"
 ```
 
 ## Validation (overview)
