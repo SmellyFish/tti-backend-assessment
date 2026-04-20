@@ -358,7 +358,7 @@ curl -sS \
   "http://localhost:8000/api/patients/1/summary?instrument_id=1"
 ```
 
-Test the protected auth route:
+Test the protected auth route (dev-only):
 
 ```bash
 # Without token (expects 401)
@@ -369,6 +369,8 @@ curl -sS \
   -H "Authorization: Bearer <your_token_here>" \
   http://localhost:8000/api/auth-test
 ```
+
+`/api/auth-test` is only registered in `local` and `testing` environments. In non-dev environments it is unavailable (404).
 
 ### Create patients
 
