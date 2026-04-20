@@ -163,7 +163,13 @@ Eloquent relationships: `Patient` → submissions; `Instrument` → questions / 
 
 ### Seeding sample data
 
-The default seeder loads **PRO** demo data only (two patients, one instrument with three questions, and three submissions with answers). It does not create Laravel `users`.
+The default seeder loads larger **PRO** demo data for exploratory testing:
+- 50 patients
+- 60 instruments
+- 3–6 questions per instrument
+- 240 submissions with type-correct answers
+
+It does not create Laravel `users`.
 
 From a configured environment:
 
