@@ -41,6 +41,20 @@ Prerequisites: [Docker](https://docs.docker.com/get-docker/) with Compose v2.
 
 Code lives under [`routes/api.php`](routes/api.php) (`/api` prefix), with Form Requests and API Resources in `app/Http/Requests` and `app/Http/Resources`. Keep the markdown file updated when the API changes; the README only summarizes where to look.
 
+### OpenAPI specification
+
+A machine-readable OpenAPI 3.1 contract is available at:
+
+- **[`resources/docs/openapi.yaml`](resources/docs/openapi.yaml)**
+
+Validate the spec from the repository root:
+
+```bash
+npx @redocly/cli lint resources/docs/openapi.yaml
+```
+
+Optional: open the file in [Swagger Editor](https://editor.swagger.io/) or Redoc-compatible viewers to inspect generated docs.
+
 ### Design decisions
 
 - **Typed answer storage via JSON**: Answer values are stored in a single JSON column so one schema supports `scale_1_5` (number), `yes_no` (boolean), and `free_text` (string) without polymorphic tables.
