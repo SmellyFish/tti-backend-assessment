@@ -9,4 +9,5 @@ return [
     'answer_value_scale_1_5_invalid' => 'The value must be an integer between 1 and 5.',
     'answer_value_yes_no_invalid' => 'The value must be a boolean.',
     'answer_value_free_text_invalid' => 'The value must be a string.',
+    'invalid_credentials' => 'Invalid credentials.',
 ];

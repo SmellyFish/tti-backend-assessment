@@ -63,6 +63,21 @@ All routes under `/api/*` use Laravel's API limiter with a policy of **60 reques
 - OpenAPI responses for all implemented operations include a `429` contract in [`resources/docs/openapi.yaml`](resources/docs/openapi.yaml).
 - For local development, you can bypass throttling by setting `API_RATE_LIMIT_ENABLED=false` in `.env` (applies only when `APP_ENV=local`).
 
+### Sanctum scaffolding
+
+Laravel Sanctum is scaffolded for token-based API auth, while existing PRO endpoints remain public by design.
+
+- Token endpoint: `POST /api/auth/token`
+- Request payload: `email`, `password`, optional `device_name`
+- Success response includes `token`, `token_type` (`Bearer`), and basic `user` info
+- Invalid credentials return **401**
+
+Use the returned token in authenticated requests when needed:
+
+```bash
+curl -H "Authorization: Bearer <token>" http://localhost:8000/api/patients/1/summary?instrument_id=1
+```
+
 ### Design decisions
 
 - **Typed answer storage via JSON**: Answer values are stored in a single JSON column so one schema supports `scale_1_5` (number), `yes_no` (boolean), and `free_text` (string) without polymorphic tables.

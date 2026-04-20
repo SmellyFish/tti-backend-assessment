@@ -3,6 +3,7 @@
 This file is the **canonical API reference** for this project (also rendered at the web root `/`). The repository `README.md` points here instead of duplicating payloads and examples.
 
 For a machine-readable contract, see [`resources/docs/openapi.yaml`](openapi.yaml).
+The OpenAPI file also documents the scaffolded auth token endpoint: `POST /api/auth/token`.
 
 All routes are under the `/api` prefix. Request and response bodies are JSON unless noted.
 

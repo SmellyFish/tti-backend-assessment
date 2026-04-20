@@ -12,6 +12,8 @@ servers:
   - url: http://localhost:8000
     description: Local development
 tags:
+  - name: auth
+    description: Token issuance operations
   - name: patients
     description: Patient creation operations
   - name: instruments
@@ -22,6 +24,46 @@ tags:
     description: Aggregated patient summary operations
 security: []
 paths:
+  /api/auth/token:
+    post:
+      tags: [auth]
+      summary: Issue API token
+      operationId: issueAuthToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreAuthTokenRequest'
+            example:
+              email: auth@example.com
+              password: password
+              device_name: postman
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
   /api/patients:
     post:
       tags: [patients]
@@ -253,6 +295,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/TooManyRequestsError'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Token
   parameters:
     PatientId:
       name: patient
@@ -273,6 +320,40 @@ components:
       schema:
         type: integer
   schemas:
+    StoreAuthTokenRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        device_name:
+          type: [string, 'null']
+          maxLength: 255
+    AuthTokenUser:
+      type: object
+      required: [id, name, email]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+    AuthTokenResponse:
+      type: object
+      required: [token, token_type, user]
+      properties:
+        token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        user:
+          $ref: '#/components/schemas/AuthTokenUser'
     ResponseType:
       type: string
       enum: [scale_1_5, yes_no, free_text]
@@ -533,6 +614,13 @@ components:
         message:
           type: string
           example: Not found
+    UnauthorizedError:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Invalid credentials.
     TooManyRequestsError:
       type: object
       required: [message]
