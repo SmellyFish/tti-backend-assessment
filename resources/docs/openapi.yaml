@@ -50,6 +50,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
   /api/instruments:
     post:
       tags: [instruments]
@@ -74,6 +80,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
   /api/patients/{patient}/submissions:
     post:
       tags: [submissions]
@@ -106,6 +118,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
     get:
       tags: [submissions]
       summary: List submissions for patient
@@ -125,6 +143,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
   /api/patients/{patient}/submissions/{submission}:
     get:
       tags: [submissions]
@@ -146,6 +170,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
   /api/patients/{patient}/summary:
     get:
       tags: [summary]
@@ -216,6 +246,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TooManyRequestsError'
 components:
   parameters:
     PatientId:
@@ -497,3 +533,10 @@ components:
         message:
           type: string
           example: Not found
+    TooManyRequestsError:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Too Many Attempts.

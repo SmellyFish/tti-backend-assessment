@@ -525,3 +525,5 @@ Validation error shape:
   }
 }
 ```
+
+Rate limiting is enabled for all `/api/*` routes. See [`openapi.yaml`](openapi.yaml) for `429 Too Many Requests` response contracts.

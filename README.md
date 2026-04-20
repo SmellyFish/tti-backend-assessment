@@ -55,6 +55,13 @@ npx @redocly/cli lint resources/docs/openapi.yaml
 
 Optional: open the file in [Swagger Editor](https://editor.swagger.io/) or Redoc-compatible viewers to inspect generated docs.
 
+### API rate limiting
+
+All routes under `/api/*` use Laravel's API limiter with a policy of **60 requests per minute per IP**.
+
+- Throttled requests return **HTTP 429** using Laravel's default throttle response format.
+- OpenAPI responses for all implemented operations include a `429` contract in [`resources/docs/openapi.yaml`](resources/docs/openapi.yaml).
+
 ### Design decisions
 
 - **Typed answer storage via JSON**: Answer values are stored in a single JSON column so one schema supports `scale_1_5` (number), `yes_no` (boolean), and `free_text` (string) without polymorphic tables.
@@ -68,12 +75,12 @@ Optional: open the file in [Swagger Editor](https://editor.swagger.io/) or Redoc
 - **Time-boxed implementation**: The assessment was implemented in phases; core correctness, validation, and test coverage were prioritized over broader platform concerns.
 - **In-memory aggregation for summary**: The summary endpoint currently loads relevant submissions and answers then computes aggregates in PHP for clarity and maintainability; SQL-side aggregation or caching can be added later if data volume grows.
 - **Single canonical docs file**: Endpoint payload details live in `resources/docs/api-schema.md` and are rendered at `/`; this README intentionally links to that source instead of duplicating examples.
-- **No authentication layer in scope**: Auth/rate limiting were left out of the core implementation to match the exercise scope and keep focus on domain behavior.
+- **No authentication layer in scope**: Auth was left out of the core implementation to match the exercise scope and keep focus on domain behavior.
 
 ### Future improvements
 
 - Add summary caching/invalidation strategy for high-frequency dashboard reads.
-- Add API auth (for example Sanctum) and route-level rate limiting.
+- Add API auth (for example Sanctum) and endpoint-level throttling policies by route category.
 - Add query/performance instrumentation (including automated N+1 guards in tests).
 - Expand localization with additional language files and request-driven locale negotiation.
 - Add OpenAPI spec generation and contract-level schema validation in CI.
