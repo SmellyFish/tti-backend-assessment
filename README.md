@@ -61,6 +61,7 @@ All routes under `/api/*` use Laravel's API limiter with a policy of **60 reques
 
 - Throttled requests return **HTTP 429** using Laravel's default throttle response format.
 - OpenAPI responses for all implemented operations include a `429` contract in [`resources/docs/openapi.yaml`](resources/docs/openapi.yaml).
+- For local development, you can bypass throttling by setting `API_RATE_LIMIT_ENABLED=false` in `.env` (applies only when `APP_ENV=local`).
 
 ### Design decisions
 

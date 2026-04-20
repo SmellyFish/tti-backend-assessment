@@ -24,6 +24,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('api', function (Request $request) {
+            $rateLimitEnabled = filter_var(
+                env('API_RATE_LIMIT_ENABLED', true),
+                FILTER_VALIDATE_BOOLEAN
+            );
+
+            if (app()->environment('local') && ! $rateLimitEnabled) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(60)->by($request->ip() ?? 'unknown-ip');
         });
 
