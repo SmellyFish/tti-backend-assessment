@@ -211,7 +211,7 @@ Filter by suite or file, for example:
 
 ```bash
 php artisan test --testsuite=Feature
-docker compose exec app php artisan test tests/Feature/ExampleTest.php
+docker compose exec app php artisan test tests/Feature/Api/PatientStoreTest.php
 ```
 
 ### Exploring models (optional)
@@ -225,87 +225,10 @@ php artisan tinker
 
 Example: `App\Models\Patient::with('submissions.answers')->first()`.
 
-### Background
+### Assessment brief reference
 
-Wave Health helps patients with chronic conditions track their treatment experiences. Patients periodically complete questionnaires (called "instruments") that capture symptoms, side effects, and quality of life. Clinicians use this data to monitor patients remotely.
+The original assessment brief and requirement wording is captured in [`plan.md`](plan.md).
 
-### Requirements
-
-#### Data Model
-
-Design and implement a schema to support the following:
-
-- **Patients** — A patient has a name, date of birth, and a medical record number (MRN)
-- **Instruments** — A questionnaire template with a title, description, and a set of ordered questions. Each question has a prompt and a response type (one of: `scale_1_5`, `yes_no`, `free_text`)
-- **Submissions** — A completed instance of an instrument by a patient at a specific date/time, containing the patient's answers to each question
-
-#### API Endpoints
-
-Implement the following endpoints:
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/patients` | Create a new patient |
-| `POST` | `/api/instruments` | Create a new instrument with questions |
-| `POST` | `/api/patients/{id}/submissions` | Submit a completed instrument for a patient |
-| `GET` | `/api/patients/{id}/submissions` | List all submissions for a patient (paginated, newest first) |
-| `GET` | `/api/patients/{id}/submissions/{id}` | Get a single submission with all answers |
-| `GET` | `/api/patients/{id}/summary` | Aggregate summary (see below) |
-
-#### Summary Endpoint
-
-`GET /api/patients/{id}/summary?instrument_id={id}`
-
-Returns an aggregated view of a patient's responses to a specific instrument over time:
-
-- For `scale_1_5` questions: return the **average score** across all submissions
-- For `yes_no` questions: return the **percentage of "yes" responses**
-- For `free_text` questions: return the **count of submissions** with a non-empty response
-- Include the **total number of submissions** and the **date range** (earliest to latest)
-
-#### Validation Rules
-
-- Submissions must reference a valid patient and instrument
-- All questions in the instrument must be answered
-- Answers must match the question's response type:
-  - `scale_1_5`: integer between 1 and 5
-  - `yes_no`: boolean
-  - `free_text`: string (may be empty)
-- MRN must be unique across patients
-- Return appropriate error responses with clear messages
-
-### What We're Evaluating
-
-| Area | What We're Looking For |
-|------|----------------------|
-| **Database Design** | Normalized schema, appropriate indexes, well-thought-out relationships and migrations |
-| **API Design** | RESTful conventions, consistent response structures, proper HTTP status codes |
-| **Laravel Proficiency** | Effective use of Eloquent, Form Requests, Resources, and other Laravel patterns |
-| **Validation & Error Handling** | Robust input validation, graceful error responses, edge case handling |
-| **Code Quality** | Clean, readable code with clear naming, separation of concerns, and SOLID principles |
-| **Security Awareness** | Consideration for data sensitivity; mass assignment protection, input sanitization, etc. |
-
-### Bonus (Not Required)
-
-- Automated tests (Feature or Unit) for key endpoints
-- API documentation (e.g., OpenAPI/Swagger or a simple markdown doc)
-- Rate limiting or authentication scaffolding
-- Any performance considerations (query optimization, eager loading, caching)
-
-### Submission Instructions
-
-1. **Fork** the repository
-2. Complete the exercise on a feature branch
-3. Open a **Pull Request** back to the original repository with:
-   - A clear PR description summarizing your approach
-   - A `README.md` that includes:
-     - Setup instructions (we should be able to run it locally)
-     - Any design decisions or trade-offs you made
-     - What you would improve or add with more time
-4. Include database migrations and a seeder with sample data
-
-### Notes
-
-- This is a simplified version of a real domain we work in. Don't overthink it — we want to see how you approach the problem, not a production-ready system.
-- If you have questions or need clarification, email armando@tti.care. Asking good questions is a positive signal.
-- We will review your submission before the technical interview and use it as a starting point for discussion. Be prepared to walk through your design decisions and talk about how you'd extend it.
+This README is intentionally optimized as a project operation guide (setup, architecture, design decisions, and verification), while request/response API details remain canonical in:
+- [`resources/docs/api-schema.md`](resources/docs/api-schema.md)
+- [`resources/docs/openapi.yaml`](resources/docs/openapi.yaml)

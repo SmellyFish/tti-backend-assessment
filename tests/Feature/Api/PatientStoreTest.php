@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\Patient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class PatientStoreTest extends TestCase
@@ -41,115 +42,16 @@ class PatientStoreTest extends TestCase
         $this->assertMatchesOpenApiContract($response, 'POST', '/api/patients');
     }
 
-    public function test_name_is_required(): void
+    #[DataProvider('invalidPatientPayloadProvider')]
+    public function test_patient_store_validation_rules(callable $mutatePayload, array $expectedErrors): void
     {
         $payload = $this->minimalValidPayload();
-        unset($payload['name']);
+        $mutatePayload($payload);
 
         $this->postJson('/api/patients', $payload)
             ->assertStatus(422)
             ->assertJsonPath('message', __('api.validation_failed'))
-            ->assertJsonValidationErrors(['name']);
-    }
-
-    public function test_name_cannot_be_empty_string(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['name'] = '';
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['name']);
-    }
-
-    public function test_name_must_be_string(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['name'] = 12345;
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['name']);
-    }
-
-    public function test_name_must_not_exceed_255_characters(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['name'] = str_repeat('a', 256);
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['name']);
-    }
-
-    public function test_date_of_birth_is_required(): void
-    {
-        $payload = $this->minimalValidPayload();
-        unset($payload['date_of_birth']);
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['date_of_birth']);
-    }
-
-    public function test_date_of_birth_must_match_y_m_d_format(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['date_of_birth'] = '20-05-1990';
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['date_of_birth']);
-    }
-
-    public function test_date_of_birth_rejects_invalid_calendar_date(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['date_of_birth'] = '1990-02-31';
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['date_of_birth']);
-    }
-
-    public function test_mrn_is_required(): void
-    {
-        $payload = $this->minimalValidPayload();
-        unset($payload['mrn']);
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['mrn']);
-    }
-
-    public function test_mrn_cannot_be_empty_string(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['mrn'] = '';
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['mrn']);
-    }
-
-    public function test_mrn_must_be_string(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['mrn'] = 12345;
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['mrn']);
-    }
-
-    public function test_mrn_must_not_exceed_255_characters(): void
-    {
-        $payload = $this->minimalValidPayload();
-        $payload['mrn'] = str_repeat('x', 256);
-
-        $this->postJson('/api/patients', $payload)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['mrn']);
+            ->assertJsonValidationErrors($expectedErrors);
     }
 
     public function test_mrn_must_be_unique(): void
@@ -239,6 +141,81 @@ class PatientStoreTest extends TestCase
             'name' => 'Jordan Test',
             'date_of_birth' => '1988-03-15',
             'mrn' => 'MRN-UNIQUE-'.uniqid(),
+        ];
+    }
+
+    /**
+     * @return array<string, array{callable(array<string, mixed>): void, array<int, string>}>
+     */
+    public static function invalidPatientPayloadProvider(): array
+    {
+        return [
+            'name required' => [
+                static function (array &$payload): void {
+                    unset($payload['name']);
+                },
+                ['name'],
+            ],
+            'name empty string' => [
+                static function (array &$payload): void {
+                    $payload['name'] = '';
+                },
+                ['name'],
+            ],
+            'name must be string' => [
+                static function (array &$payload): void {
+                    $payload['name'] = 12345;
+                },
+                ['name'],
+            ],
+            'name max 255' => [
+                static function (array &$payload): void {
+                    $payload['name'] = str_repeat('a', 256);
+                },
+                ['name'],
+            ],
+            'date of birth required' => [
+                static function (array &$payload): void {
+                    unset($payload['date_of_birth']);
+                },
+                ['date_of_birth'],
+            ],
+            'date of birth format' => [
+                static function (array &$payload): void {
+                    $payload['date_of_birth'] = '20-05-1990';
+                },
+                ['date_of_birth'],
+            ],
+            'date of birth invalid calendar date' => [
+                static function (array &$payload): void {
+                    $payload['date_of_birth'] = '1990-02-31';
+                },
+                ['date_of_birth'],
+            ],
+            'mrn required' => [
+                static function (array &$payload): void {
+                    unset($payload['mrn']);
+                },
+                ['mrn'],
+            ],
+            'mrn empty string' => [
+                static function (array &$payload): void {
+                    $payload['mrn'] = '';
+                },
+                ['mrn'],
+            ],
+            'mrn must be string' => [
+                static function (array &$payload): void {
+                    $payload['mrn'] = 12345;
+                },
+                ['mrn'],
+            ],
+            'mrn max 255' => [
+                static function (array &$payload): void {
+                    $payload['mrn'] = str_repeat('x', 256);
+                },
+                ['mrn'],
+            ],
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class AuthTokenTest extends TestCase
@@ -59,52 +60,17 @@ class AuthTokenTest extends TestCase
             ->assertJsonValidationErrors(['email', 'password']);
     }
 
-    public function test_issue_token_requires_email(): void
+    #[DataProvider('invalidAuthTokenPayloadProvider')]
+    public function test_issue_token_validation_rules(callable $mutatePayload, array $expectedErrors): void
     {
         $payload = $this->validPayload();
-        unset($payload['email']);
+        $mutatePayload($payload);
 
         $response = $this->postJson('/api/auth/token', $payload);
 
         $response->assertStatus(422)
             ->assertJsonPath('message', __('api.validation_failed'))
-            ->assertJsonValidationErrors(['email']);
-    }
-
-    public function test_issue_token_requires_valid_email_format(): void
-    {
-        $payload = $this->validPayload();
-        $payload['email'] = 'not-an-email';
-
-        $response = $this->postJson('/api/auth/token', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('message', __('api.validation_failed'))
-            ->assertJsonValidationErrors(['email']);
-    }
-
-    public function test_issue_token_requires_password(): void
-    {
-        $payload = $this->validPayload();
-        unset($payload['password']);
-
-        $response = $this->postJson('/api/auth/token', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('message', __('api.validation_failed'))
-            ->assertJsonValidationErrors(['password']);
-    }
-
-    public function test_issue_token_password_must_be_string(): void
-    {
-        $payload = $this->validPayload();
-        $payload['password'] = 12345;
-
-        $response = $this->postJson('/api/auth/token', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('message', __('api.validation_failed'))
-            ->assertJsonValidationErrors(['password']);
+            ->assertJsonValidationErrors($expectedErrors);
     }
 
     public function test_issue_token_allows_missing_device_name(): void
@@ -141,22 +107,11 @@ class AuthTokenTest extends TestCase
             ->assertJsonStructure(['token']);
     }
 
-    public function test_issue_token_device_name_must_be_string(): void
+    #[DataProvider('invalidAuthTokenDeviceNameProvider')]
+    public function test_issue_token_device_name_validation(callable $mutatePayload): void
     {
         $payload = $this->validPayload();
-        $payload['device_name'] = ['tablet'];
-
-        $response = $this->postJson('/api/auth/token', $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('message', __('api.validation_failed'))
-            ->assertJsonValidationErrors(['device_name']);
-    }
-
-    public function test_issue_token_device_name_must_not_exceed_255_characters(): void
-    {
-        $payload = $this->validPayload();
-        $payload['device_name'] = str_repeat('d', 256);
+        $mutatePayload($payload);
 
         $response = $this->postJson('/api/auth/token', $payload);
 
@@ -205,6 +160,58 @@ class AuthTokenTest extends TestCase
             'email' => 'auth@example.com',
             'password' => 'password',
             'device_name' => 'postman',
+        ];
+    }
+
+    /**
+     * @return array<string, array{callable(array<string, mixed>): void, array<int, string>}>
+     */
+    public static function invalidAuthTokenPayloadProvider(): array
+    {
+        return [
+            'email required' => [
+                static function (array &$payload): void {
+                    unset($payload['email']);
+                },
+                ['email'],
+            ],
+            'email format' => [
+                static function (array &$payload): void {
+                    $payload['email'] = 'not-an-email';
+                },
+                ['email'],
+            ],
+            'password required' => [
+                static function (array &$payload): void {
+                    unset($payload['password']);
+                },
+                ['password'],
+            ],
+            'password string' => [
+                static function (array &$payload): void {
+                    $payload['password'] = 12345;
+                },
+                ['password'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{callable(array<string, mixed>): void}>
+     */
+    public static function invalidAuthTokenDeviceNameProvider(): array
+    {
+        return [
+            'device name must be string' => [
+                static function (array &$payload): void {
+                    $payload['device_name'] = ['tablet'];
+                },
+            ],
+            'device name max 255' => [
+                static function (array &$payload): void {
+                    $payload['device_name'] = str_repeat('d', 256);
+                },
+            ],
         ];
     }
 }
