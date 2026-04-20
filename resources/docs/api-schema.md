@@ -64,7 +64,7 @@ All routes are under the `/api` prefix. Request and response bodies are JSON unl
 
 ## Implemented endpoints — request / response examples
 
-The following match the current Laravel implementation (status codes and JSON shapes). Other rows in the table above are not implemented yet.
+The following match the current Laravel implementation (status codes and JSON shapes).
 
 ### `POST /api/patients`
 
@@ -178,6 +178,143 @@ The following match the current Laravel implementation (status codes and JSON sh
 }
 ```
 
+### `POST /api/patients/{patient_id}/submissions`
+
+**Request body**
+
+```json
+{
+  "instrument_id": 1,
+  "answers": [
+    { "question_id": 1, "value": 4 },
+    { "question_id": 2, "value": true },
+    { "question_id": 3, "value": "Mild nausea, otherwise fine." }
+  ]
+}
+```
+
+- `instrument_id` must exist.
+- `answers` must include exactly one answer per question on the instrument.
+- `value` must match the target question type:
+  - `scale_1_5` => integer `1..5`
+  - `yes_no` => boolean
+  - `free_text` => string (empty string allowed)
+
+**201 Created** — submission with nested instrument and answers:
+
+```json
+{
+  "id": 10,
+  "patient_id": 1,
+  "instrument_id": 1,
+  "submitted_at": "2026-04-20T16:45:00+00:00",
+  "instrument": {
+    "id": 1,
+    "title": "Weekly symptom check-in",
+    "description": "Short PRO questionnaire",
+    "questions": [
+      {
+        "id": 1,
+        "instrument_id": 1,
+        "prompt": "Overall, how would you rate your pain this week?",
+        "response_type": "scale_1_5",
+        "sort_order": 1,
+        "created_at": "2026-04-20T16:00:00+00:00",
+        "updated_at": "2026-04-20T16:00:00+00:00"
+      }
+    ],
+    "created_at": "2026-04-20T16:00:00+00:00",
+    "updated_at": "2026-04-20T16:00:00+00:00"
+  },
+  "answers": [
+    {
+      "id": 100,
+      "question_id": 1,
+      "value": 4,
+      "question": {
+        "id": 1,
+        "instrument_id": 1,
+        "prompt": "Overall, how would you rate your pain this week?",
+        "response_type": "scale_1_5",
+        "sort_order": 1,
+        "created_at": "2026-04-20T16:00:00+00:00",
+        "updated_at": "2026-04-20T16:00:00+00:00"
+      },
+      "created_at": "2026-04-20T16:45:00+00:00",
+      "updated_at": "2026-04-20T16:45:00+00:00"
+    }
+  ],
+  "created_at": "2026-04-20T16:45:00+00:00",
+  "updated_at": "2026-04-20T16:45:00+00:00"
+}
+```
+
+**422 Unprocessable Entity** — example invalid payload:
+
+```json
+{
+  "message": "Validation failed",
+  "errors": {
+    "answers.0.value": ["The value must be an integer between 1 and 5."]
+  }
+}
+```
+
+### `GET /api/patients/{patient_id}/submissions`
+
+Returns the patient's submissions ordered by `submitted_at` descending.
+
+**200 OK** — paginated response:
+
+```json
+{
+  "data": [
+    {
+      "id": 12,
+      "patient_id": 1,
+      "instrument_id": 1,
+      "submitted_at": "2026-04-20T17:00:00+00:00",
+      "instrument": {
+        "id": 1,
+        "title": "Weekly symptom check-in",
+        "description": "Short PRO questionnaire",
+        "questions": []
+      },
+      "answers": [],
+      "created_at": "2026-04-20T17:00:00+00:00",
+      "updated_at": "2026-04-20T17:00:00+00:00"
+    }
+  ],
+  "links": {
+    "first": "http://localhost:8000/api/patients/1/submissions?page=1",
+    "last": "http://localhost:8000/api/patients/1/submissions?page=1",
+    "prev": null,
+    "next": null
+  },
+  "meta": {
+    "current_page": 1,
+    "from": 1,
+    "last_page": 1,
+    "path": "http://localhost:8000/api/patients/1/submissions",
+    "per_page": 15,
+    "to": 1,
+    "total": 1
+  }
+}
+```
+
+### `GET /api/patients/{patient_id}/submissions/{submission_id}`
+
+Returns one submission. If the `submission_id` exists but belongs to a different patient, the API responds with **404 Not Found**.
+
+**404 Not Found** — example scoped miss:
+
+```json
+{
+  "message": "Not found"
+}
+```
+
 ## Sample curl commands
 
 Base URL (local Docker setup): `http://localhost:8000`. Run these in your normal terminal, **not** inside `php artisan tinker`.
@@ -235,6 +372,42 @@ curl -sS -X POST http://localhost:8000/api/instruments \
 ```
 
 `description` is optional (omit it or set to `null`). Successful responses are **201** with JSON; validation errors are **422** with `message` and `errors`.
+
+### Create a submission
+
+```bash
+curl -sS -X POST http://localhost:8000/api/patients/1/submissions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "instrument_id": 1,
+    "answers": [
+      {
+        "question_id": 1,
+        "value": 4
+      },
+      {
+        "question_id": 2,
+        "value": true
+      },
+      {
+        "question_id": 3,
+        "value": "Mild nausea, otherwise fine."
+      }
+    ]
+  }'
+```
+
+### List submissions for a patient
+
+```bash
+curl -sS http://localhost:8000/api/patients/1/submissions
+```
+
+### Get one submission for a patient
+
+```bash
+curl -sS http://localhost:8000/api/patients/1/submissions/10
+```
 
 ## Summary endpoint (`GET .../summary`)
 
