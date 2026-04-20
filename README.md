@@ -71,6 +71,7 @@ Laravel Sanctum is scaffolded for token-based API auth, while existing PRO endpo
 - Request payload: `email`, `password`, optional `device_name`
 - Success response includes `token`, `token_type` (`Bearer`), and basic `user` info
 - Invalid credentials return **401**
+- A protected smoke-test route exists at `GET /api/auth-test` in `local`/`testing` only to validate token wiring; core PRO routes remain public.
 
 Use the returned token in authenticated requests when needed:
 
@@ -91,16 +92,33 @@ curl -H "Authorization: Bearer <token>" http://localhost:8000/api/patients/1/sum
 - **Time-boxed implementation**: The assessment was implemented in phases; core correctness, validation, and test coverage were prioritized over broader platform concerns.
 - **In-memory aggregation for summary**: The summary endpoint currently loads relevant submissions and answers then computes aggregates in PHP for clarity and maintainability; SQL-side aggregation or caching can be added later if data volume grows.
 - **Single canonical docs file**: Endpoint payload details live in `resources/docs/api-schema.md` and are rendered at `/`; this README intentionally links to that source instead of duplicating examples.
-- **No authentication layer in scope**: Auth was left out of the core implementation to match the exercise scope and keep focus on domain behavior.
+- **Minimal auth + throttling scaffolding**: Sanctum token issuance and global API throttling are intentionally lightweight foundations, not a fully locked-down production policy.
+- **Throttle response shape**: `429` responses currently use Laravel's default throttle payload rather than a custom API envelope.
 
 ### Future improvements
 
 - Add summary caching/invalidation strategy for high-frequency dashboard reads.
-- Add API auth (for example Sanctum) and endpoint-level throttling policies by route category.
+- Move from scaffolding to production-ready authz/authn (protect selected PRO routes, scopes/abilities, token lifecycle controls, and role-based policies).
+- Introduce endpoint-level throttling policies by route category and identity (IP + authenticated user dimensions).
 - Add query/performance instrumentation (including automated N+1 guards in tests).
 - Expand localization with additional language files and request-driven locale negotiation.
 - Add OpenAPI spec generation and contract-level schema validation in CI.
 - Add CI pipeline with automated test/lint checks and container build verification.
+
+### Phase 7 bonus status
+
+Implemented bonus items:
+- OpenAPI 3.1 contract at `resources/docs/openapi.yaml`
+- API rate limiting with local bypass toggle (`API_RATE_LIMIT_ENABLED=false` in `APP_ENV=local`)
+- Sanctum token issuance scaffolding (`POST /api/auth/token`) with a local/testing protected smoke route (`GET /api/auth-test`)
+- Bonus edge-case coverage in API feature tests (summary precision/messy data, rate-limit bypass, localization envelopes, public route regression, Unicode/encoding contracts)
+
+Recommended verification run:
+
+```bash
+php artisan test tests/Feature/Api
+php artisan test
+```
 
 ### Localization
 
